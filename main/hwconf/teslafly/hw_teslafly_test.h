@@ -44,6 +44,8 @@
 #define CAN_TX_GPIO_NUM				10 
 #define CAN_RX_GPIO_NUM				5
 
+// mneed to check if stcard pins fine 
+// being strapped high when inserted/powered
 // SD-card
 #define SD_PIN_MOSI					6
 #define SD_PIN_MISO					2
