@@ -31,6 +31,8 @@
 #include "packet.h"
 #include "commands.h"
 #include "nmea.h"
+#include "lispif.h"
+
 #include <string.h>
 
 #define RX_BUFFER_NUM				3
@@ -227,8 +229,8 @@ static void decode_msg(uint32_t eid, uint8_t *data8, int len, bool is_replaced) 
 
 #define RXBUF_LEN			100
 static twai_message_t rx_buf[RXBUF_LEN];
-static int rx_write = 0;
-static int rx_read = 0;
+static volatile int rx_write = 0;
+static volatile int rx_read = 0;
 static SemaphoreHandle_t proc_sem;
 
 static void rx_task(void *arg) {
@@ -261,6 +263,8 @@ static void process_task(void *arg) {
 			if (rx_read >= RXBUF_LEN) {
 				rx_read = 0;
 			}
+
+			lispif_process_can(msg->identifier, msg->data, msg->data_length_code, msg->extd);
 
 			if (msg->extd) {
 				decode_msg(msg->identifier, msg->data, msg->data_length_code, false);

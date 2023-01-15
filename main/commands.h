@@ -30,5 +30,11 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 void commands_send_packet(unsigned char *data, unsigned int len);
 void commands_send_packet_can_last(unsigned char *data, unsigned int len);
 int commands_printf(const char* format, ...);
+int commands_printf_lisp(const char* format, ...);
+void commands_init_plot(char *namex, char *namey);
+void commands_plot_add_graph(char *name);
+void commands_plot_set_graph(int graph);
+void commands_send_plot_points(float x, float y);
+void commands_send_app_data(unsigned char *data, unsigned int len);
 
 #endif /* MAIN_COMMANDS_H_ */
