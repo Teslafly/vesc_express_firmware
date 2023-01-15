@@ -22,29 +22,41 @@
 
 #include "driver/gpio.h"
 
-#define HW_NAME						"VESC Express T"
+#define HW_NAME						"Moxie Express Logger"
 
 #define HW_INIT_HOOK()				hw_init()
 
 // LEDs
+// #define LED_ADDRESSABLE_PIN          9
 #define LED_RED_PIN					9
 #define LED_BLUE_PIN				none
 
+// replace individual red/blue leds with 2x addressable leds to save gpio
 #define LED_RED_ON()				gpio_set_level(LED_RED_PIN, 1)
 #define LED_RED_OFF()				gpio_set_level(LED_RED_PIN, 0)
 
 #define LED_BLUE_ON()				//gpio_set_level(LED_BLUE_PIN, 1)
 #define LED_BLUE_OFF()				//gpio_set_level(LED_BLUE_PIN, 0)
 
+
+// all pin #'s accurate to moxie drive v2 hardware
 // CAN
-#define CAN_TX_GPIO_NUM				10 //1
-#define CAN_RX_GPIO_NUM				8 //0
+#define CAN_TX_GPIO_NUM				10 
+#define CAN_RX_GPIO_NUM				5
 
 // SD-card
-#define SD_PIN_MOSI					6 //4
-#define SD_PIN_MISO					2 //6
-#define SD_PIN_SCK					5 //5
-#define SD_PIN_CS					7 //7
+#define SD_PIN_MOSI					6
+#define SD_PIN_MISO					2
+#define SD_PIN_SCK					8
+#define SD_PIN_CS					7
+
+// SWD
+#define STM23_SWDIO                 3
+#define STM23_SWCLK                 4
+
+// I2C
+// #define I2C_SDA                     3
+// #define I2C_SCL                     4
 
 // UART
 #define UART_NUM					0
@@ -52,12 +64,9 @@
 #define UART_TX						21
 #define UART_RX						20
 
-
-// other pins:
-// scl  gpio x //no gpio 8? (can use strapping pullup)
-// sda  gpio2
-
-// adc 1-5
+// off the shelf gps units are 9600 baud by default.
+// try 9600 baud first then 115200 baud if fails?
+// try to configure for 115200 baud for that 1 gps that doesn't have nonvolatile memory?
 
 
 // Functions
