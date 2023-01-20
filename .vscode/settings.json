@@ -1,0 +1,10 @@
+{
+    "idf.adapterTargetName": "esp32c3",
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "idf.flashType": "UART",
+    "idf.portWin": "COM3",
+    "files.associations": {
+        "hw_xp_t.h": "c",
+        "hw_teslafly_test.h": "c"
+    }
+}
