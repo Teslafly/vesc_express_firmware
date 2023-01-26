@@ -43,7 +43,7 @@ static void send_packet_raw(unsigned char *buffer, unsigned int len) {
 
 void comm_uart_init(void) {
 	uart_config_t uart_config = {
-			.baud_rate = UART_BAUDRATE,
+			.baud_rate = GPS_UART_BAUDRATE,
 			.data_bits = UART_DATA_8_BITS,
 			.parity    = UART_PARITY_DISABLE,
 			.stop_bits = UART_STOP_BITS_1,

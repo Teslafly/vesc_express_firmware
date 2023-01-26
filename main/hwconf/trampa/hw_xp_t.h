@@ -48,7 +48,7 @@
 
 // UART
 #define UART_NUM					0
-#define UART_BAUDRATE				115200
+#define GPS_UART_BAUDRATE				115200
 #define UART_TX						21
 #define UART_RX						20
 

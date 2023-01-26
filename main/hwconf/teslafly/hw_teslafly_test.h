@@ -60,16 +60,22 @@
 // #define I2C_SDA                     3
 // #define I2C_SCL                     4
 
-// UART
-#define UART_NUM					0
-#define UART_BAUDRATE				115200
-#define UART_TX						21
-#define UART_RX						20
+// GPS_UART
+#define GPS_UART_NUM					0
+#define GPS_UART_BAUDRATE				115200
+#define GPS_UART_TX						21
+#define GPS_UART_RX						20
 
 // off the shelf gps units are 9600 baud by default.
 // try 9600 baud first then 115200 baud if fails?
 // try to configure for 115200 baud for that 1 gps that doesn't have nonvolatile memory?
 
+
+// VESC_UART
+#define VESC_UART_NUM					0
+#define VESC_UART_BAUDRATE				115200
+#define VESC_UART_TX						21
+#define VESC_UART_RX						20
 
 // Functions
 void hw_init(void);
