@@ -53,7 +53,7 @@ void comm_uart_init(void) {
 
 	uart_driver_install(UART_NUM, 512, 512, 0, 0, 0);
 	uart_param_config(UART_NUM, &uart_config);
-	uart_set_pin(UART_NUM, UART_TX, UART_RX, -1, -1);
+	uart_set_pin(VESC_UART_NUM, VESC_UART_TX, VESC_UART_RX, -1, -1);
 
 	packet_init(send_packet_raw, process_packet, &packet_state);
 
