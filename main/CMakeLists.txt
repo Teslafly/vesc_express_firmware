@@ -57,6 +57,7 @@ set(COMPONENT_ADD_INCLUDEDIRS
 "hwconf"
 "hwconf/trampa"
 "hwconf/lb"
+"hwconf/teslafly"
 
 "lispBM"
 "lispBM/include"

@@ -29,8 +29,8 @@
 #define FW_TEST_VERSION_NUMBER		0
 
 #if !defined(HW_SOURCE) && !defined(HW_HEADER)
-#define HW_HEADER					"hw_xp_t.h"
-#define HW_SOURCE					"hw_xp_t.c"
+// #define HW_HEADER					"hw_xp_t.h"
+// #define HW_SOURCE					"hw_xp_t.c"
 
 //#define HW_HEADER					"hw_lb_if.h"
 //#define HW_SOURCE					"hw_lb_if.c"
@@ -38,8 +38,8 @@
 //#define HW_HEADER					"hw_lb_log.h"
 //#define HW_SOURCE					"hw_lb_log.c"
 
-// #define HW_HEADER					"hw_teslafly_test.h"
-// #define HW_SOURCE					"hw_teslafly_test.c"
+#define HW_HEADER					"hw_teslafly_test.h"
+#define HW_SOURCE					"hw_teslafly_test.c"
 #endif
 
 #if !defined(HW_SOURCE) && !defined(HW_SOURCE_ALT)
