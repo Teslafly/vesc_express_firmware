@@ -40,6 +40,9 @@
 
 #define HW_HEADER					"hw_teslafly_test.h"
 #define HW_SOURCE					"hw_teslafly_test.c"
+
+//#define HW_HEADER					"hw_devkit_c3.h"
+//#define HW_SOURCE					"hw_devkit_c3.c"
 #endif
 
 #if !defined(HW_SOURCE) && !defined(HW_SOURCE_ALT)

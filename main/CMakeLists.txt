@@ -20,6 +20,10 @@ set(COMPONENT_SRCS
 "nmea.c"
 "utils.c"
 "flash_helper.c"
+"rb.c"
+"bms.c"
+"log_comm.c"
+"hwspi.c"
 
 "config/confparser.c"
 "config/confxml.c"
@@ -46,9 +50,17 @@ set(COMPONENT_SRCS
 "lispBM/src/lbm_variables.c"
 "lispBM/src/lbm_variables.c"
 "lispBM/src/lbm_custom_type.c"
+"lispBM/src/lbm_flat_value.c"
+"lispBM/src/lbm_flags.c"
 "lispBM/src/extensions/array_extensions.c"
 "lispBM/src/extensions/math_extensions.c"
 "lispBM/src/extensions/string_extensions.c"
+
+"display/lispif_disp_extensions.c"
+"display/disp_sh8501b.c"
+"display/disp_ili9341.c"
+"display/disp_ssd1306.c"
+"display/tjpgd.c"
 )
 
 set(COMPONENT_ADD_INCLUDEDIRS
@@ -62,6 +74,7 @@ set(COMPONENT_ADD_INCLUDEDIRS
 "lispBM"
 "lispBM/include"
 "lispBM/platform/freertos/include"
+"display"
 )
 
 register_component()

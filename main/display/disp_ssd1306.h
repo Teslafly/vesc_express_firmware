@@ -1,5 +1,6 @@
 /*
-	Copyright 2022 Benjamin Vedder	benjamin@vedder.se
+	Copyright 2023 Benjamin Vedder	benjamin@vedder.se
+	Copyright 2023 Joel Svensson    svenssonjoel@yahoo.se
 
 	This file is part of the VESC firmware.
 
@@ -15,39 +16,19 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    */
+ */
 
-#ifndef MAIN_HWCONF_LB_HW_LB_LOG_T_H_
-#define MAIN_HWCONF_LB_HW_LB_LOG_T_H_
 
-#include "driver/gpio.h"
+#ifndef MAIN_DISPLAY_DISP_SSD1306_H_
+#define MAIN_DISPLAY_DISP_SSD1306_H_
 
-#define HW_NAME						"LB Log"
+#include <stdint.h>
+#include <stdbool.h>
+#include "lispif_disp_extensions.h"
 
-#define HW_INIT_HOOK()				hw_init()
+void disp_ssd1306_init(int pin_sda, int pin_scl, uint32_t clk_speed);
+bool disp_ssd1306_render_image(image_buffer_t *img, uint16_t x, uint16_t y, color_t *colors);
+void disp_ssd1306_clear(uint32_t color);
+void disp_ssd1306_reset(void);
 
-// CAN
-#define CAN_TX_GPIO_NUM				7
-#define CAN_RX_GPIO_NUM				6
-#define CAN_EN_GPIO_NUM				8
-
-// SD-card
-#define SD_PIN_MOSI					4
-#define SD_PIN_MISO					0
-#define SD_PIN_SCK					10
-#define SD_PIN_CS					3
-
-// UART
-#define UART_NUM					0
-#define UART_BAUDRATE				115200
-#define UART_TX						21
-#define UART_RX						20
-
-// Functions
-void hw_init(void);
-void hw_clear_can_fault(void);
-
-// Config Overrides
-#define CONF_BLE_NAME				"LbBMS"
-
-#endif /* MAIN_HWCONF_LB_HW_LB_LOG_T_H_ */
+#endif /* MAIN_DISPLAY_DISP_SSD1306_H_ */

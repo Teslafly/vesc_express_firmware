@@ -25,10 +25,13 @@
 #include "lispbm.h"
 #include "mempools.h"
 #include "flash_helper.h"
+#include "conf_general.h"
 
 #define HEAP_SIZE				(2048 + 256 + 160)
+#ifndef LISP_MEM_SIZE
 #define LISP_MEM_SIZE			LBM_MEMORY_SIZE_16K
 #define LISP_MEM_BITMAP_SIZE	LBM_MEMORY_BITMAP_SIZE_16K
+#endif
 #define GC_STACK_SIZE			160
 #define PRINT_STACK_SIZE		128
 #define EXTENSION_STORAGE_SIZE	250
@@ -52,6 +55,7 @@ static bool lisp_thd_running = false;
 static SemaphoreHandle_t lbm_mutex;
 
 static int repl_cid = -1;
+static int restart_cnt = 0;
 
 /*
  * TODO:
@@ -66,9 +70,14 @@ static void sleep_callback(uint32_t us);
 static void eval_thread(void *arg);
 
 void lispif_init(void) {
+	memset(&buffered_tok_state, 0, sizeof(buffered_tok_state));
 	lbm_mutex = xSemaphoreCreateMutex();
 	lispif_restart(false, true);
 	lbm_set_eval_step_quota(50);
+}
+
+int lispif_get_restart_cnt(void) {
+	return restart_cnt;
 }
 
 void lispif_lock_lbm(void) {
@@ -77,17 +86,6 @@ void lispif_lock_lbm(void) {
 
 void lispif_unlock_lbm(void) {
 	xSemaphoreGive(lbm_mutex);
-}
-
-static void ctx_cb(eval_context_t *ctx, void *arg1, void *arg2) {
-	if (arg2 != NULL) {
-		lbm_print_value((char*)arg2, 40, ctx->r);
-	}
-
-	if (arg1 != NULL) {
-		float *res = (float*)arg1;
-		*res = 100.0 * (float)ctx->K.max_sp / 256.0;
-	}
 }
 
 static void print_ctx_info(eval_context_t *ctx, void *arg1, void *arg2) {
@@ -150,7 +148,6 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 		float cpu_use = 0.0;
 		float heap_use = 0.0;
 		float mem_use = 0.0;
-		float stack_use = 0.0;
 
 		if (lisp_thd_running) {
 			uint32_t timeTot = portGET_RUN_TIME_COUNTER_VALUE();
@@ -175,7 +172,6 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 		}
 
 		mem_use = 100.0 * (float)(lbm_memory_num_words() - lbm_memory_num_free()) / (float)lbm_memory_num_words();
-		lbm_running_iterator(ctx_cb, &stack_use, NULL);
 
 		uint8_t *send_buffer_global = mempools_get_packet_buffer();
 		int32_t ind = 0;
@@ -184,7 +180,9 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 		buffer_append_float16(send_buffer_global, cpu_use, 1e2, &ind);
 		buffer_append_float16(send_buffer_global, heap_use, 1e2, &ind);
 		buffer_append_float16(send_buffer_global, mem_use, 1e2, &ind);
-		buffer_append_float16(send_buffer_global, stack_use, 1e2, &ind);
+
+		// Stack. Currently unused
+		buffer_append_float16(send_buffer_global, 0, 1e2, &ind);
 
 		// Result. Currently unused.
 		send_buffer_global[ind++] = '\0';
@@ -312,7 +310,7 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 				lbm_symrepr_name_iterator(sym_it);
 				commands_printf_lisp(" ");
 			} else if (strncmp(str, ":reset", 6) == 0) {
-				commands_printf_lisp(lispif_restart(false, flash_helper_code_size(CODE_IND_LISP) > 0) ?
+				commands_printf_lisp(lispif_restart(true, flash_helper_code_size(CODE_IND_LISP) > 0) ?
 						"Reset OK\n\n" : "Reset Failed\n\n");
 			} else if (strncmp(str, ":pause", 6) == 0) {
 				lbm_pause_eval_with_gc(30);
@@ -532,9 +530,12 @@ static void done_callback(eval_context_t *ctx) {
 bool lispif_restart(bool print, bool load_code) {
 	bool res = false;
 
+	restart_cnt++;
+
+	char *code_data = (char*)flash_helper_code_data_ptr(CODE_IND_LISP);
 	int32_t code_len = flash_helper_code_size(CODE_IND_LISP);
 
-	if (!load_code || code_len > 0) {
+	if (!load_code || (code_data != 0 && code_len > 0)) {
 		lispif_disable_all_events();
 
 		if (!lisp_thd_running) {
@@ -551,7 +552,7 @@ bool lispif_restart(bool print, bool load_code) {
 			lbm_set_usleep_callback(sleep_callback);
 			lbm_set_printf_callback(commands_printf_lisp);
 			lbm_set_ctx_done_callback(done_callback);
-			xTaskCreatePinnedToCore(eval_thread, "lbm_eval", 3062, NULL, 6, NULL, tskNO_AFFINITY);
+			xTaskCreatePinnedToCore(eval_thread, "lbm_eval", 3072, NULL, 6, NULL, tskNO_AFFINITY);
 
 			lisp_thd_running = true;
 		} else {
@@ -580,47 +581,23 @@ bool lispif_restart(bool print, bool load_code) {
 		lispif_load_vesc_extensions();
 		lbm_set_dynamic_load_callback(lispif_vesc_dynamic_loader);
 
+		int code_chars = strnlen(code_data, code_len);
+
 		// Load imports
-
-		int32_t position = 0;
-		while (position < code_len) {
-			uint8_t buf[1];
-
-			// TODO: Read more bytes at a time to make it faster
-			flash_helper_code_data(CODE_IND_LISP, position, buf, 1);
-			position++;
-
-			if (buf[0] == 0) {
-				break;
-			}
-		}
-
-		if (code_len > (position + 2)) {
-			uint8_t buf[120];
-			flash_helper_code_data(CODE_IND_LISP, position, buf, 2);
-			position += 2;
-
-			int32_t ind = 0;
-			uint16_t num_imports = buffer_get_uint16(buf, &ind);
+		if (code_len > code_chars + 3) {
+			int32_t ind = code_chars + 1;
+			uint16_t num_imports = buffer_get_uint16((uint8_t*)code_data, &ind);
 
 			if (num_imports > 0 && num_imports < 500) {
 				for (int i = 0;i < num_imports;i++) {
-					flash_helper_code_data(CODE_IND_LISP, position, buf, 120);
+					char *name = code_data + ind;
+					ind += strlen(name) + 1;
+					int32_t offset = buffer_get_int32((uint8_t*)code_data, &ind);
+					int32_t len = buffer_get_int32((uint8_t*)code_data, &ind);
 
-					int name_len = strnlen((char*)buf, 100);
-					ind = name_len + 1;
-					int32_t offset = buffer_get_int32(buf, &ind);
-					int32_t len = buffer_get_int32(buf, &ind);
-					position += ind;
-
-					lbm_value res;
-					char *name = lbm_malloc(name_len + 1);
-					memcpy(name, buf, name_len + 1);
-
-					if (lbm_create_array(&res, LBM_TYPE_CHAR, len)) {
-						lbm_array_header_t *arr = (lbm_array_header_t*)lbm_car(res);
-						flash_helper_code_data(CODE_IND_LISP, offset, (uint8_t*)arr->data, len);
-						lbm_define(name, res);
+					lbm_value val;
+					if (lbm_share_array(&val, code_data + offset, LBM_TYPE_BYTE, len)) {
+						lbm_define(name, val);
 					}
 				}
 			}
@@ -628,63 +605,11 @@ bool lispif_restart(bool print, bool load_code) {
 
 		if (load_code) {
 			if (print) {
-				commands_printf_lisp("Parsing %d bytes", code_len);
+				commands_printf_lisp("Parsing %d characters", code_chars);
 			}
 
-			lbm_create_buffered_char_channel(&buffered_tok_state, &buffered_string_tok);
-
-			if (lbm_load_and_eval_program(&buffered_string_tok) <= 0) {
-				if (print) {
-					commands_printf_lisp("Could not start eval");
-				}
-			} else {
-				lbm_continue_eval();
-
-				position = 0;
-				int timeout = 1500;
-				bool null_found = false;
-
-				while (position < code_len) {
-					uint8_t buf[1];
-
-					// TODO: Read more bytes at a time to make it faster
-					flash_helper_code_data(CODE_IND_LISP, position, buf, 1);
-
-					if (buf[0] == 0) {
-						null_found = true;
-						break;
-					}
-
-					int ch_res = lbm_channel_write(&buffered_string_tok, (char)buf[0]);
-
-					if (ch_res == CHANNEL_SUCCESS) {
-						position++;
-						timeout = 0;
-					} else if (ch_res == CHANNEL_READER_CLOSED) {
-						break;
-					} else {
-						vTaskDelay(1 / portTICK_PERIOD_MS);
-						timeout--;
-						if (timeout == 0) {
-							break;
-						}
-					}
-				}
-
-				timeout = 1500;
-				while (!buffered_tok_state.reader_closed) {
-					lbm_channel_writer_close(&buffered_string_tok);
-					vTaskDelay(1 / portTICK_PERIOD_MS);
-					timeout--;
-					if (timeout == 0) {
-						break;
-					}
-				}
-
-				if ((!null_found && position != code_len) && print) {
-					commands_printf_lisp("Could not stream program from flash");
-				}
-			}
+			lbm_create_string_char_channel(&string_tok_state, &string_tok, code_data);
+			lbm_load_and_eval_program(&string_tok);
 		}
 
 		lbm_continue_eval();

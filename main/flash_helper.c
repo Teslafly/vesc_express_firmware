@@ -28,6 +28,10 @@ typedef struct {
 	bool check_done;
 	bool ok;
 	uint32_t size;
+	uint16_t flags;
+	bool mmap_done;
+	const void *addr;
+	esp_partition_mmap_handle_t handle;
 } _code_checks;
 
 static _code_checks code_checks[2] = {0};
@@ -50,41 +54,41 @@ static void code_check(int ind) {
 		return;
 	}
 
-	uint8_t base[64];
-	esp_partition_read(part, 0, base, 8);
+	if (!code_checks[ind].mmap_done)  {
+		esp_err_t res = esp_partition_mmap(part, 0, part->size, ESP_PARTITION_MMAP_DATA,
+				&code_checks[ind].addr, &code_checks[ind].handle);
 
+		if (res == ESP_OK) {
+			code_checks[ind].mmap_done = true;
+		} else {
+			return;
+		}
+	}
+
+	uint8_t *base = (uint8_t*)code_checks[ind].addr;
 	int32_t index = 0;
 	uint32_t code_len = buffer_get_uint32(base, &index);
 	uint16_t code_crc = buffer_get_uint16(base, &index);
-	uint16_t crc_calc = crc16(base + index, 2);
 
 	if (code_len <= (part->size - 8)) {
-		int ind_code = 0;
-		while (ind_code < code_len) {
-			int data_left = code_len - ind_code;
-
-			if (data_left > 64) {
-				esp_partition_read(part, ind_code + 8, base, 64);
-				crc_calc = crc16_with_init(base, 64, crc_calc);
-				ind_code += 64;
-			} else {
-				esp_partition_read(part, ind_code + 8, base, data_left);
-				crc_calc = crc16_with_init(base, data_left, crc_calc);
-				ind_code += data_left;
-			}
-		}
-
+		uint16_t crc_calc = crc16(base + index, code_len + 2); // CRC includes the 2 byte flags
 		code_checks[ind].ok = crc_calc == code_crc;
-		code_checks[ind].size = code_len;
 	} else {
 		code_checks[ind].ok = false;
+	}
+
+	if (code_checks[ind].ok) {
+		code_checks[ind].size = code_len;
+		code_checks[ind].flags = buffer_get_uint16(base, &index);
+	} else {
 		code_checks[ind].size = 0;
+		code_checks[ind].flags = 0;
 	}
 
 	code_checks[ind].check_done = true;
 }
 
-bool flash_helper_erase_code(int ind) {
+bool flash_helper_erase_code(int ind, int size) {
 	const esp_partition_t *part = get_partition(ind);
 
 	if (!part) {
@@ -95,7 +99,16 @@ bool flash_helper_erase_code(int ind) {
 	code_checks[ind].check_done = false;
 	code_checks[ind].ok = false;
 
-	return esp_partition_erase_range(part, 0, part->size) == ESP_OK;
+	uint32_t erase_size = part->size;
+
+	if (size > 0) {
+		erase_size = 0;
+		while (erase_size < size && erase_size < part->size) {
+			erase_size += part->erase_size;
+		}
+	}
+
+	return esp_partition_erase_range(part, 0, erase_size) == ESP_OK;
 }
 
 bool flash_helper_write_code(int ind, uint32_t offset, uint8_t *data, uint32_t len) {
@@ -128,6 +141,16 @@ bool flash_helper_code_data(int ind, uint32_t offset, uint8_t *data, uint32_t le
 	return esp_partition_read(part, offset + 8, data, len) == ESP_OK;
 }
 
+const uint8_t *flash_helper_code_data_ptr(int ind) {
+	code_check(ind);
+
+	if (!code_checks[ind].ok) {
+		return NULL;
+	}
+
+	return (uint8_t*)code_checks[ind].addr + 8;
+}
+
 uint32_t flash_helper_code_size(int ind) {
 	code_check(ind);
 	return code_checks[ind].size;
@@ -135,21 +158,5 @@ uint32_t flash_helper_code_size(int ind) {
 
 uint16_t flash_helper_code_flags(int ind) {
 	code_check(ind);
-
-	if (!code_checks[ind].ok) {
-		return 0;
-	}
-
-	const esp_partition_t *part = get_partition(ind);
-
-	if (!part) {
-		return 0;
-	}
-
-	uint8_t base[4];
-	esp_partition_read(part, 0, base, 4);
-
-	int32_t index = 0;
-	uint32_t code_len = buffer_get_uint32(base, &index);
-	return code_len;
+	return code_checks[ind].flags;
 }

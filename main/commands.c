@@ -43,6 +43,7 @@
 #include "nmea.h"
 #include "lispif.h"
 #include "flash_helper.h"
+#include "bms.h"
 
 #include "esp_efuse.h"
 #include "esp_efuse_table.h"
@@ -59,11 +60,7 @@
 #define D(x) 						((double)x##L)
 
 // Private variables
-static SemaphoreHandle_t send_mutex;
-static uint8_t send_buffer_global[512];
-
 static SemaphoreHandle_t print_mutex;
-static char print_buffer[PRINT_BUFFER_SIZE];
 
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
@@ -75,8 +72,11 @@ static void(* volatile send_func_can_fwd)(unsigned char *data, unsigned int len)
 // Private functions
 static bool rmtree(const char *path);
 
+static void send_func_dummy(unsigned char *data, unsigned int len) {
+	(void)data; (void)len;
+}
+
 void commands_init(void) {
-	send_mutex = xSemaphoreCreateMutex();
 	print_mutex = xSemaphoreCreateMutex();
 }
 
@@ -99,9 +99,8 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 	}
 
 	// Avoid calling invalid function pointer if it is null.
-	// commands_send_packet will make the check.
-	if (!reply_func) {
-		return;
+	if (!reply_func && packet_id != COMM_LISP_REPL_CMD) {
+		reply_func = send_func_dummy;
 	}
 
 	switch (packet_id) {
@@ -209,7 +208,7 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 
 	case COMM_PING_CAN: {
 		int32_t ind = 0;
-		xSemaphoreTake(send_mutex, portMAX_DELAY);
+		uint8_t *send_buffer_global = mempools_get_packet_buffer();
 		send_buffer_global[ind++] = COMM_PING_CAN;
 
 		for (uint8_t i = 0;i < 255;i++) {
@@ -220,13 +219,13 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 		}
 
 		reply_func(send_buffer_global, ind);
-		xSemaphoreGive(send_mutex);
+		mempools_free_packet_buffer(send_buffer_global);
 	} break;
 
 
 	case COMM_GET_CUSTOM_CONFIG:
 	case COMM_GET_CUSTOM_CONFIG_DEFAULT: {
-		main_config_t *conf = mempools_alloc_conf();
+		main_config_t *conf = calloc(1, sizeof(main_config_t));
 
 		int conf_ind = data[0];
 
@@ -240,19 +239,19 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 			confparser_set_defaults_main_config_t(conf);
 		}
 
-		xSemaphoreTake(send_mutex, portMAX_DELAY);
+		uint8_t *send_buffer_global = mempools_get_packet_buffer();
 		int32_t ind = 0;
 		send_buffer_global[ind++] = packet_id;
 		send_buffer_global[ind++] = conf_ind;
 		int32_t len = confparser_serialize_main_config_t(send_buffer_global + ind, conf);
 		commands_send_packet(send_buffer_global, len + ind);
-		xSemaphoreGive(send_mutex);
+		mempools_free_packet_buffer(send_buffer_global);
 
-		mempools_free_conf(conf);
+		free(conf);
 	} break;
 
 	case COMM_SET_CUSTOM_CONFIG: {
-		main_config_t *conf = mempools_alloc_conf();
+		main_config_t *conf = calloc(1, sizeof(main_config_t));
 		*conf = backup.config;
 
 		int conf_ind = data[0];
@@ -270,7 +269,7 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 			commands_printf("Warning: Could not set configuration");
 		}
 
-		mempools_free_conf(conf);
+		free(conf);
 	} break;
 
 	case COMM_GET_CUSTOM_CONFIG_XML: {
@@ -289,7 +288,7 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 			break;
 		}
 
-		xSemaphoreTake(send_mutex, portMAX_DELAY);
+		uint8_t *send_buffer_global = mempools_get_packet_buffer();
 		ind = 0;
 		send_buffer_global[ind++] = packet_id;
 		send_buffer_global[ind++] = conf_ind;
@@ -298,8 +297,7 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 		memcpy(send_buffer_global + ind, data_main_config_t_ + ofs_conf, len_conf);
 		ind += len_conf;
 		reply_func(send_buffer_global, ind);
-
-		xSemaphoreGive(send_mutex);
+		mempools_free_packet_buffer(send_buffer_global);
 	} break;
 
 	case COMM_TERMINAL_CMD:
@@ -315,7 +313,7 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 		char *from = (char*)data + ind;
 		ind += strlen(from);
 
-		xSemaphoreTake(send_mutex, portMAX_DELAY);
+		uint8_t *send_buffer_global = mempools_get_packet_buffer();
 
 		ind = 0;
 		send_buffer_global[ind++] = packet_id;
@@ -381,29 +379,42 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 		}
 
 		reply_func(send_buffer_global, ind);
-		xSemaphoreGive(send_mutex);
+		mempools_free_packet_buffer(send_buffer_global);
 	} break;
 
 	case COMM_FILE_READ: {
 		static FILE *f_last = 0;
 		static int32_t f_last_offset = 0;
 		static int32_t f_last_size = 0;
-		static uint8_t wifi_buffer[4000];
+		uint8_t *wifi_buffer = 0;
+
+		uint8_t *send_buffer_global = mempools_get_packet_buffer();
+		uint8_t *send_buffer = send_buffer_global;
+		size_t send_size = 400;
+
+		void(*reply_func_raw)(unsigned char *data, unsigned int len) = 0;
+		if (reply_func == comm_wifi_send_packet_local) {
+			reply_func_raw = comm_wifi_send_raw_local;
+		} else if (reply_func == comm_wifi_send_packet_hub) {
+			reply_func_raw = comm_wifi_send_raw_hub;
+		}
+
+		if (reply_func_raw) {
+			const int wifi_buffer_size = 4000;
+			wifi_buffer = malloc(wifi_buffer_size);
+			if (wifi_buffer) {
+				send_buffer = wifi_buffer + 3;
+				send_size = wifi_buffer_size - 100;
+			} else {
+				reply_func_raw = 0;
+			}
+		}
 
 		int32_t ind = 0;
 		char *path = (char*)data + ind;
 		int path_len = strlen(path);
 		ind += path_len + 1;
 		int32_t offset = buffer_get_int32(data, &ind);
-
-		xSemaphoreTake(send_mutex, portMAX_DELAY);
-		uint8_t *send_buffer = send_buffer_global;
-		size_t send_size = 400;
-
-		if (reply_func == comm_wifi_send_packet) {
-			send_buffer = wifi_buffer + 3;
-			send_size = sizeof(wifi_buffer) - 100;
-		}
 
 		char path_full[path_len + strlen("/sdcard/") + 1];
 		strcpy(path_full, "/sdcard/");
@@ -440,7 +451,7 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 			buffer_append_int32(send_buffer, 0, &ind);
 		}
 
-		if (reply_func == comm_wifi_send_packet) {
+		if (reply_func_raw) {
 			unsigned short crc = crc16(send_buffer, ind);
 
 			if (ind > 255) {
@@ -451,7 +462,7 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 				wifi_buffer[ind++] = (uint8_t)(crc >> 8);
 				wifi_buffer[ind++] = (uint8_t)(crc & 0xFF);
 				wifi_buffer[ind++] = 3;
-				comm_wifi_send_raw(wifi_buffer, ind);
+				reply_func_raw(wifi_buffer, ind);
 			} else {
 				wifi_buffer[1] = 2;
 				wifi_buffer[2] = ind & 0xFF;
@@ -459,13 +470,15 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 				wifi_buffer[ind++] = (uint8_t)(crc >> 8);
 				wifi_buffer[ind++] = (uint8_t)(crc & 0xFF);
 				wifi_buffer[ind++] = 3;
-				comm_wifi_send_raw(wifi_buffer + 1, ind - 1);
+				reply_func_raw(wifi_buffer + 1, ind - 1);
 			}
+
+			free(wifi_buffer);
 		} else {
 			reply_func(send_buffer, ind);
 		}
 
-		xSemaphoreGive(send_mutex);
+		mempools_free_packet_buffer(send_buffer_global);
 	} break;
 
 	case COMM_FILE_WRITE: {
@@ -644,9 +657,15 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 			lispif_restart(false, false);
 		}
 
-		bool flash_res = flash_helper_erase_code(packet_id == COMM_QMLUI_ERASE ? CODE_IND_QML : CODE_IND_LISP);
-
 		int32_t ind = 0;
+		int erase_size = -1;
+		if (len >= 4) {
+			erase_size = buffer_get_int32(data, &ind);
+		}
+
+		bool flash_res = flash_helper_erase_code(packet_id == COMM_QMLUI_ERASE ? CODE_IND_QML : CODE_IND_LISP, erase_size);
+
+		ind = 0;
 		uint8_t send_buffer[50];
 		send_buffer[ind++] = packet_id;
 		send_buffer[ind++] = flash_res ? 1 : 0;
@@ -672,6 +691,16 @@ void commands_process_packet(unsigned char *data, unsigned int len,
 	case COMM_CUSTOM_APP_DATA:
 		lispif_process_custom_app_data(data, len);
 		break;
+
+	case COMM_BMS_GET_VALUES:
+	case COMM_BMS_SET_CHARGE_ALLOWED:
+	case COMM_BMS_SET_BALANCE_OVERRIDE:
+	case COMM_BMS_RESET_COUNTERS:
+	case COMM_BMS_FORCE_BALANCE:
+	case COMM_BMS_ZERO_CURRENT_OFFSET: {
+		bms_process_cmd(data - 1, len + 1, reply_func);
+		break;
+	}
 
 	default:
 		break;
@@ -706,6 +735,8 @@ int commands_printf(const char* format, ...) {
 	va_start (arg, format);
 	int len;
 
+	char *print_buffer = malloc(PRINT_BUFFER_SIZE);
+
 	print_buffer[0] = COMM_PRINT;
 	len = vsnprintf(print_buffer + 1, (PRINT_BUFFER_SIZE - 1), format, arg);
 	va_end (arg);
@@ -716,6 +747,7 @@ int commands_printf(const char* format, ...) {
 		commands_send_packet((unsigned char*)print_buffer, len_to_print);
 	}
 
+	free(print_buffer);
 	xSemaphoreGive(print_mutex);
 
 	return len_to_print - 1;
@@ -727,6 +759,8 @@ int commands_printf_lisp(const char* format, ...) {
 	va_list arg;
 	va_start (arg, format);
 	int len;
+
+	char *print_buffer = malloc(PRINT_BUFFER_SIZE);
 
 	print_buffer[0] = COMM_LISP_PRINT;
 	len = vsnprintf(print_buffer + 1, (PRINT_BUFFER_SIZE - 1), format, arg);
@@ -742,6 +776,7 @@ int commands_printf_lisp(const char* format, ...) {
 		commands_send_packet((unsigned char*)print_buffer, len_to_print);
 	}
 
+	free(print_buffer);
 	xSemaphoreGive(print_mutex);
 
 	return len_to_print - 1;
