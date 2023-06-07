@@ -42,7 +42,7 @@ static int m_pin_dc    = -1;
 #define COMMAND() 	    (DISP_REG_CLR = 1 << m_pin_dc)
 #define DATA() 	        (DISP_REG_SET = 1 << m_pin_dc)
 
-void command_start(uint8_t cmd) {
+static void command_start(uint8_t cmd) {
 	COMMAND();
 	hwspi_send_data(&cmd, 1);
 	DATA();
@@ -273,7 +273,7 @@ static lbm_value ext_disp_orientation(lbm_value *args, lbm_uint argn) {
 	lbm_value res = ENC_SYM_TRUE;
 	switch(orientation) {
 	case 0:
-		arg = 0x8;
+		arg = 0x08;
 		disp_ili9341_command(0x36, &arg, 1);
 		display_width = 240;
 		display_height = 320;
@@ -324,8 +324,7 @@ void disp_ili9341_init(int pin_sd0, int pin_clk, int pin_cs, int pin_reset, int 
 	lbm_add_extension("ext-disp-orientation", ext_disp_orientation);
 }
 
-
-void disp_ili9341_command(uint8_t command, uint8_t *args, int argn) {
+void disp_ili9341_command(uint8_t command, const uint8_t *args, int argn) {
 	hwspi_begin();
 	command_start(command);
 	if (args != NULL && argn > 0) {
@@ -334,7 +333,7 @@ void disp_ili9341_command(uint8_t command, uint8_t *args, int argn) {
 	hwspi_end();
 }
 
-static uint8_t ili9341_init_sequence[15][7] = {
+static const uint8_t ili9341_init_sequence[][7] = {
 		{4, 0xCF, 0x00, 0xD9, 0x30},
 		{5, 0xED, 0x64, 0x03, 0x12, 0x81},
 		{4, 0xE8, 0x85, 0x10, 0x7A},
@@ -354,13 +353,13 @@ static uint8_t ili9341_init_sequence[15][7] = {
 
 void disp_ili9341_reset(void) {
 	gpio_set_level(m_pin_reset, 0);
-	vTaskDelay(200);
+	vTaskDelay(5);
 	gpio_set_level(m_pin_reset, 1);
-	vTaskDelay(100);
+	vTaskDelay(120);
 
 	for (int i = 0; i < 15; i ++) {
 		int argn = ili9341_init_sequence[i][0] - 1;
-		uint8_t *args = &ili9341_init_sequence[i][2];
+		const uint8_t *args = &ili9341_init_sequence[i][2];
 		uint8_t  cmd  = ili9341_init_sequence[i][1];
 		disp_ili9341_command(cmd, args, argn);
 	}
@@ -369,6 +368,8 @@ void disp_ili9341_reset(void) {
 	disp_ili9341_command(0x29, 0, 0);
 	vTaskDelay(100);
 
+	display_width = 320;
+	display_height = 240;
+
 	disp_ili9341_clear(0);
 }
-

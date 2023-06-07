@@ -37,6 +37,7 @@ extern "C" {
 
 #define EVAL_CPS_CONTEXT_FLAG_NOTHING       (uint32_t)0x0
 #define EVAL_CPS_CONTEXT_FLAG_TRAP          (uint32_t)0x1
+#define EVAL_CPS_CONTEXT_FLAG_CONST         (uint32_t)0x2
   
 /** The eval_context_t struct represents a lispbm process.
  *
@@ -51,13 +52,15 @@ typedef struct eval_context_s{
   uint32_t  flags;
   lbm_value r;
   char *error_reason;
-  bool  done;
   bool  app_cont;
   lbm_stack_t K;
   lbm_uint timestamp;
   lbm_uint sleep_us;
   lbm_cid id;
   lbm_cid parent;
+  /* while reading */
+  lbm_int row0;
+  lbm_int row1;
   /* List structure */
   struct eval_context_s *prev;
   struct eval_context_s *next;
@@ -295,10 +298,6 @@ void lbm_set_printf_callback(int (*prnt)(const char*, ...));
  * an undefined symbol
  */
 void lbm_set_dynamic_load_callback(bool (*fptr)(const char *, const char **));
-/** Set a callback that is run when reading source is finishes
- *  within a context
- */
-void lbm_set_reader_done_callback(void (*fptr)(lbm_cid));
 /** Get the CID of the currently executing context.
  *  Should be called from an extension where there is
  *  a guarantee that a context is running
@@ -321,6 +320,9 @@ bool lbm_mailbox_change_size(eval_context_t *ctx, lbm_uint new_size);
 bool create_string_channel(char *str, lbm_value *res);
 
 bool lift_char_channel(lbm_char_channel_t *ch, lbm_value *res);
+
+lbm_flash_status request_flash_storage_cell(lbm_value val, lbm_value *res);
+  //bool lift_array_flash(lbm_value flash_cell, char *data, lbm_uint num_elt);
 
 /** deliver a message
  *

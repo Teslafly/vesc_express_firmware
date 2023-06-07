@@ -18,6 +18,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <malloc.h>
+
+#include "main.h"
 #include "lispif.h"
 #include "commands.h"
 #include "terminal.h"
@@ -27,23 +30,25 @@
 #include "flash_helper.h"
 #include "conf_general.h"
 
-#define HEAP_SIZE				(2048 + 256 + 160)
-#ifndef LISP_MEM_SIZE
-#define LISP_MEM_SIZE			LBM_MEMORY_SIZE_16K
-#define LISP_MEM_BITMAP_SIZE	LBM_MEMORY_BITMAP_SIZE_16K
-#endif
 #define GC_STACK_SIZE			160
 #define PRINT_STACK_SIZE		128
 #define EXTENSION_STORAGE_SIZE	250
 #define VARIABLE_STORAGE_SIZE	64
 
-static lbm_cons_t heap[HEAP_SIZE] __attribute__ ((aligned (8)));
-static uint32_t memory_array[LISP_MEM_SIZE];
-static uint32_t bitmap_array[LISP_MEM_BITMAP_SIZE];
+static size_t heap_size = 0;
+static size_t mem_size = 0;
+static size_t bitmap_size = 0;
+
+static lbm_cons_t *heap;
+static uint32_t *memory_array;
+static uint32_t *bitmap_array;
 static uint32_t gc_stack_storage[GC_STACK_SIZE];
 static uint32_t print_stack_storage[PRINT_STACK_SIZE];
 static extension_fptr extension_storage[EXTENSION_STORAGE_SIZE];
 static lbm_value variable_storage[VARIABLE_STORAGE_SIZE];
+
+static lbm_const_heap_t const_heap;
+static lbm_uint *const_heap_ptr = 0;
 
 static lbm_string_channel_state_t string_tok_state;
 static lbm_char_channel_t string_tok;
@@ -67,9 +72,30 @@ static int restart_cnt = 0;
 // Private functions
 static uint32_t timestamp_callback(void);
 static void sleep_callback(uint32_t us);
+static bool const_heap_write(lbm_uint ix, lbm_uint w);
 static void eval_thread(void *arg);
 
 void lispif_init(void) {
+	heap_size = 2048;
+	mem_size = LBM_MEMORY_SIZE_16K;
+	bitmap_size = LBM_MEMORY_BITMAP_SIZE_16K;
+
+	if (backup.config.wifi_mode == WIFI_MODE_DISABLED &&
+			backup.config.ble_mode == BLE_MODE_DISABLED) {
+		heap_size *= 4;
+		mem_size *= 2;
+		bitmap_size *= 2;
+	} else if (backup.config.wifi_mode == WIFI_MODE_DISABLED ||
+			backup.config.ble_mode == BLE_MODE_DISABLED) {
+		heap_size *= 2;
+		mem_size *= 2;
+		bitmap_size *= 2;
+	}
+
+	heap = memalign(8, heap_size * sizeof(lbm_cons_t));
+	memory_array = heap_caps_malloc(mem_size * sizeof(uint32_t), MALLOC_CAP_DMA);
+	bitmap_array = heap_caps_malloc(bitmap_size * sizeof(uint32_t), MALLOC_CAP_DMA);
+
 	memset(&buffered_tok_state, 0, sizeof(buffered_tok_state));
 	lbm_mutex = xSemaphoreCreateMutex();
 	lispif_restart(false, true);
@@ -168,7 +194,7 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 		}
 
 		if (lbm_heap_state.gc_num > 0) {
-			heap_use = 100.0 * (float)(HEAP_SIZE - lbm_heap_state.gc_last_free) / (float)HEAP_SIZE;
+			heap_use = 100.0 * (float)(heap_size - lbm_heap_state.gc_last_free) / (float)heap_size;
 		}
 
 		mem_use = 100.0 * (float)(lbm_memory_num_words() - lbm_memory_num_free()) / (float)lbm_memory_num_words();
@@ -270,8 +296,8 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 				commands_printf_lisp(" ");
 			} else if (len >= 5 && strncmp(str, ":info", 5) == 0) {
 				commands_printf_lisp("--(LISP HEAP)--\n");
-				commands_printf_lisp("Heap size: %u Bytes\n", HEAP_SIZE * 8);
-				commands_printf_lisp("Used cons cells: %d\n", HEAP_SIZE - lbm_heap_num_free());
+				commands_printf_lisp("Heap size: %u Bytes\n", heap_size * 8);
+				commands_printf_lisp("Used cons cells: %d\n", heap_size - lbm_heap_num_free());
 				commands_printf_lisp("Free cons cells: %d\n", lbm_heap_num_free());
 				commands_printf_lisp("GC counter: %d\n", lbm_heap_state.gc_num);
 				commands_printf_lisp("Recovered: %d\n", lbm_heap_state.gc_recovered);
@@ -283,6 +309,10 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 				commands_printf_lisp("Allocated arrays: %u\n", lbm_heap_state.num_alloc_arrays);
 				commands_printf_lisp("Symbol table size: %u Bytes\n", lbm_get_symbol_table_size());
 				commands_printf_lisp("Extensions: %u, max %u\n", lbm_get_num_extensions(), lbm_get_max_extensions());
+				commands_printf_lisp("--(Flash)--\n");
+				commands_printf_lisp("Size: %u Bytes\n", const_heap.size);
+				commands_printf_lisp("Used cells: %d\n", const_heap.next);
+				commands_printf_lisp("Free cells: %d\n", const_heap.size / 4 - const_heap.next);
 			} else if (strncmp(str, ":env", 4) == 0) {
 				lbm_value curr = *lbm_get_env_ptr();
 				char output[128];
@@ -348,11 +378,13 @@ void lispif_process_cmd(unsigned char *data, unsigned int len,
 
 				if (ok) {
 					lbm_create_string_char_channel(&string_tok_state, &string_tok, (char*)data);
+					repl_cid = lbm_load_and_eval_expression(&string_tok);
+					lbm_continue_eval();
+
 					if (reply_func != NULL) {
-						repl_cid = lbm_load_and_eval_expression(&string_tok);
-						lbm_continue_eval();
 						lbm_wait_ctx(repl_cid, 500);
 					}
+
 					repl_cid = -1;
 				} else {
 					commands_printf_lisp("Could not pause");
@@ -539,10 +571,10 @@ bool lispif_restart(bool print, bool load_code) {
 		lispif_disable_all_events();
 
 		if (!lisp_thd_running) {
-			lbm_init(heap, HEAP_SIZE,
+			lbm_init(heap, heap_size,
 					gc_stack_storage, GC_STACK_SIZE,
-					memory_array, LISP_MEM_SIZE,
-					bitmap_array, LISP_MEM_BITMAP_SIZE,
+					memory_array, mem_size,
+					bitmap_array, bitmap_size,
 					print_stack_storage, PRINT_STACK_SIZE,
 					extension_storage, EXTENSION_STORAGE_SIZE);
 			lbm_variables_init(variable_storage, VARIABLE_STORAGE_SIZE);
@@ -562,10 +594,10 @@ bool lispif_restart(bool print, bool load_code) {
 				vTaskDelay(1 / portTICK_PERIOD_MS);
 			}
 
-			lbm_init(heap, HEAP_SIZE,
+			lbm_init(heap, heap_size,
 					gc_stack_storage, GC_STACK_SIZE,
-					memory_array, LISP_MEM_SIZE,
-					bitmap_array, LISP_MEM_BITMAP_SIZE,
+					memory_array, mem_size,
+					bitmap_array, bitmap_size,
 					print_stack_storage, PRINT_STACK_SIZE,
 					extension_storage, EXTENSION_STORAGE_SIZE);
 			lbm_variables_init(variable_storage, VARIABLE_STORAGE_SIZE);
@@ -581,7 +613,10 @@ bool lispif_restart(bool print, bool load_code) {
 		lispif_load_vesc_extensions();
 		lbm_set_dynamic_load_callback(lispif_vesc_dynamic_loader);
 
-		int code_chars = strnlen(code_data, code_len);
+		int code_chars = 0;
+		if (code_data) {
+			code_chars = strnlen(code_data, code_len);
+		}
 
 		// Load imports
 		if (code_len > code_chars + 3) {
@@ -596,12 +631,21 @@ bool lispif_restart(bool print, bool load_code) {
 					int32_t len = buffer_get_int32((uint8_t*)code_data, &ind);
 
 					lbm_value val;
-					if (lbm_share_array(&val, code_data + offset, LBM_TYPE_BYTE, len)) {
+					if (lbm_share_array(&val, code_data + offset, len)) {
 						lbm_define(name, val);
 					}
 				}
 			}
 		}
+
+		if (code_data == 0) {
+			code_data = (char*)flash_helper_code_data_raw(CODE_IND_LISP);
+		}
+
+		const_heap_ptr = (lbm_uint*)(code_data + code_len + 16);
+		const_heap_ptr = (lbm_uint*)((uint32_t)const_heap_ptr & 0xFFFFFFF4);
+		uint32_t const_heap_len = ((uint32_t)code_data + flash_helper_code_size_raw(CODE_IND_LISP)) - (uint32_t)const_heap_ptr;
+		lbm_const_heap_init(const_heap_write, &const_heap, const_heap_ptr, const_heap_len);
 
 		if (load_code) {
 			if (print) {
@@ -609,7 +653,7 @@ bool lispif_restart(bool print, bool load_code) {
 			}
 
 			lbm_create_string_char_channel(&string_tok_state, &string_tok, code_data);
-			lbm_load_and_eval_program(&string_tok);
+			lbm_load_and_eval_program_incremental(&string_tok);
 		}
 
 		lbm_continue_eval();
@@ -631,6 +675,21 @@ static void sleep_callback(uint32_t us) {
 		t = 1;
 	}
 	vTaskDelay(t);
+}
+
+static bool const_heap_write(lbm_uint ix, lbm_uint w) {
+	if (const_heap_ptr[ix] == w) {
+		return true;
+	}
+
+	uint32_t offset = (uint32_t)const_heap_ptr - (uint32_t)flash_helper_code_data_raw(CODE_IND_LISP) + sizeof(lbm_uint) * ix;
+	flash_helper_write_code(CODE_IND_LISP, offset, (uint8_t*)&w, sizeof(lbm_uint));
+
+	if (const_heap_ptr[ix] != w) {
+		return false;
+	}
+
+	return true;
 }
 
 static void eval_thread(void *arg) {
