@@ -1,0 +1,228 @@
+good espidf build
+
+
+ *  Executing task: cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DESP_PLATFORM=1 -B c:\dev\teslafly_vesc_express_firmware_dev\build -S c:\dev\teslafly_vesc_express_firmware_dev 
+
+-- Found Git: C:/dev/tools/expressif/.espressif/tools/idf-git/2.30.1/cmd/git.exe (found version "2.30.1.windows.1") 
+-- The C compiler identification is GNU 11.2.0
+-- The CXX compiler identification is GNU 11.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: C:/dev/tools/expressif/.espressif/tools/riscv32-esp-elf/esp-2022r1-11.2.0/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/dev/tools/expressif/.espressif/tools/riscv32-esp-elf/esp-2022r1-11.2.0/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/dev/tools/expressif/.espressif/tools/riscv32-esp-elf/esp-2022r1-11.2.0/riscv32-esp-elf/bin/riscv32-esp-elf-g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Building ESP-IDF components for target esp32c3
+-- Project sdkconfig file C:/dev/teslafly_vesc_express_firmware_dev/sdkconfig
+-- Looking for sys/types.h
+-- Looking for sys/types.h - found
+-- Looking for stdint.h
+-- Looking for stdint.h - found
+-- Looking for stddef.h
+-- Looking for stddef.h - found
+-- Check size of time_t
+-- Check size of time_t - done
+-- Found Python3: c:/dev/tools/expressif/.espressif/python_env/idf5.0_py3.8_env/Scripts/python.exe (found version "3.8.7") found components: Interpreter 
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
+-- App "teslafly_vesc_express_firmware_" version: 6.0
+-- Adding linker script C:/dev/teslafly_vesc_express_firmware_dev/build/esp-idf/esp_system/ld/memory.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_system/ld/esp32c3/sections.ld.in
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.api.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.libgcc.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.newlib.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.version.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.eco3.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/soc/esp32c3/ld/esp32c3.peripherals.ld
+-- Components: app_trace app_update bootloader bootloader_support bt cmock console cxx driver efuse esp-tls esp_adc esp_app_format esp_common esp_eth esp_event esp_gdbstub esp_hid esp_http_client esp_http_server esp_https_ota esp_https_server esp_hw_support esp_lcd esp_local_ctrl esp_netif esp_partition esp_phy esp_pm esp_psram esp_ringbuf esp_rom esp_system esp_timer esp_wifi espcoredump esptool_py fatfs freertos hal heap http_parser idf_test ieee802154 json log lwip main mbedtls mqtt newlib nvs_flash openthread partition_table protobuf-c protocomm pthread riscv sdmmc soc spi_flash spiffs tcp_transport ulp unity usb vfs wear_levelling wifi_provisioning wpa_supplicant
+-- Component paths: C:/dev/tools/expressif/esp-idf/components/app_trace C:/dev/tools/expressif/esp-idf/components/app_update C:/dev/tools/expressif/esp-idf/components/bootloader C:/dev/tools/expressif/esp-idf/components/bootloader_support C:/dev/tools/expressif/esp-idf/components/bt C:/dev/tools/expressif/esp-idf/components/cmock C:/dev/tools/expressif/esp-idf/components/console C:/dev/tools/expressif/esp-idf/components/cxx C:/dev/tools/expressif/esp-idf/components/driver C:/dev/tools/expressif/esp-idf/components/efuse C:/dev/tools/expressif/esp-idf/components/esp-tls C:/dev/tools/expressif/esp-idf/components/esp_adc C:/dev/tools/expressif/esp-idf/components/esp_app_format C:/dev/tools/expressif/esp-idf/components/esp_common C:/dev/tools/expressif/esp-idf/components/esp_eth C:/dev/tools/expressif/esp-idf/components/esp_event C:/dev/tools/expressif/esp-idf/components/esp_gdbstub C:/dev/tools/expressif/esp-idf/components/esp_hid C:/dev/tools/expressif/esp-idf/components/esp_http_client C:/dev/tools/expressif/esp-idf/components/esp_http_server C:/dev/tools/expressif/esp-idf/components/esp_https_ota C:/dev/tools/expressif/esp-idf/components/esp_https_server C:/dev/tools/expressif/esp-idf/components/esp_hw_support C:/dev/tools/expressif/esp-idf/components/esp_lcd C:/dev/tools/expressif/esp-idf/components/esp_local_ctrl C:/dev/tools/expressif/esp-idf/components/esp_netif C:/dev/tools/expressif/esp-idf/components/esp_partition C:/dev/tools/expressif/esp-idf/components/esp_phy C:/dev/tools/expressif/esp-idf/components/esp_pm C:/dev/tools/expressif/esp-idf/components/esp_psram C:/dev/tools/expressif/esp-idf/components/esp_ringbuf C:/dev/tools/expressif/esp-idf/components/esp_rom C:/dev/tools/expressif/esp-idf/components/esp_system C:/dev/tools/expressif/esp-idf/components/esp_timer C:/dev/tools/expressif/esp-idf/components/esp_wifi C:/dev/tools/expressif/esp-idf/components/espcoredump C:/dev/tools/expressif/esp-idf/components/esptool_py C:/dev/tools/expressif/esp-idf/components/fatfs C:/dev/tools/expressif/esp-idf/components/freertos C:/dev/tools/expressif/esp-idf/components/hal C:/dev/tools/expressif/esp-idf/components/heap C:/dev/tools/expressif/esp-idf/components/http_parser C:/dev/tools/expressif/esp-idf/components/idf_test C:/dev/tools/expressif/esp-idf/components/ieee802154 C:/dev/tools/expressif/esp-idf/components/json C:/dev/tools/expressif/esp-idf/components/log C:/dev/tools/expressif/esp-idf/components/lwip C:/dev/teslafly_vesc_express_firmware_dev/main C:/dev/tools/expressif/esp-idf/components/mbedtls C:/dev/tools/expressif/esp-idf/components/mqtt C:/dev/tools/expressif/esp-idf/components/newlib C:/dev/tools/expressif/esp-idf/components/nvs_flash C:/dev/tools/expressif/esp-idf/components/openthread C:/dev/tools/expressif/esp-idf/components/partition_table C:/dev/tools/expressif/esp-idf/components/protobuf-c C:/dev/tools/expressif/esp-idf/components/protocomm C:/dev/tools/expressif/esp-idf/components/pthread C:/dev/tools/expressif/esp-idf/components/riscv C:/dev/tools/expressif/esp-idf/components/sdmmc C:/dev/tools/expressif/esp-idf/components/soc C:/dev/tools/expressif/esp-idf/components/spi_flash C:/dev/tools/expressif/esp-idf/components/spiffs C:/dev/tools/expressif/esp-idf/components/tcp_transport C:/dev/tools/expressif/esp-idf/components/ulp C:/dev/tools/expressif/esp-idf/components/unity C:/dev/tools/expressif/esp-idf/components/usb C:/dev/tools/expressif/esp-idf/components/vfs C:/dev/tools/expressif/esp-idf/components/wear_levelling C:/dev/tools/expressif/esp-idf/components/wifi_provisioning C:/dev/tools/expressif/esp-idf/components/wpa_supplicant
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/dev/teslafly_vesc_express_firmware_dev/build
+
+ *  Executing task: ninja  
+
+[10/1153] Generating ../../partition_table/partition-table.bin
+Partition table binary generated. Contents:
+*******************************************************************************
+# ESP-IDF Partition Table
+# Name, Type, SubType, Offset, Size, Flags
+nvs,data,nvs,0x9000,24K,
+otadata,data,ota,0xf000,8K,
+phy_init,data,phy,0x11000,4K,
+ota_0,app,ota_0,0x20000,1500K,
+ota_1,app,ota_1,0x1a0000,1500K,
+lisp,data,nvs,0x317000,128K,
+qml,data,nvs,0x337000,128K,
+*******************************************************************************
+[619/1153] Performing configure step for 'bootloader'
+-- Found Git: C:/dev/tools/expressif/.espressif/tools/idf-git/2.30.1/cmd/git.exe (found version "2.30.1.windows.1")
+-- The C compiler identification is GNU 11.2.0
+-- The CXX compiler identification is GNU 11.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: C:/dev/tools/expressif/.espressif/tools/riscv32-esp-elf/esp-2022r1-11.2.0/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/dev/tools/expressif/.espressif/tools/riscv32-esp-elf/esp-2022r1-11.2.0/riscv32-esp-elf/bin/riscv32-esp-elf-gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/dev/tools/expressif/.espressif/tools/riscv32-esp-elf/esp-2022r1-11.2.0/riscv32-esp-elf/bin/riscv32-esp-elf-g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Building ESP-IDF components for target esp32c3
+-- Project sdkconfig file C:/dev/teslafly_vesc_express_firmware_dev/sdkconfig
+-- Looking for sys/types.h
+-- Looking for sys/types.h - found
+-- Looking for stdint.h
+-- Looking for stdint.h - found
+-- Looking for stddef.h
+-- Looking for stddef.h - found
+-- Check size of time_t
+-- Check size of time_t - done
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/soc/esp32c3/ld/esp32c3.peripherals.ld
+-- App "bootloader" version: v5.0
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.api.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.libgcc.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/esp_rom/esp32c3/ld/esp32c3.rom.newlib.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/bootloader/subproject/main/ld/esp32c3/bootloader.ld
+-- Adding linker script C:/dev/tools/expressif/esp-idf/components/bootloader/subproject/main/ld/esp32c3/bootloader.rom.ld
+-- Components: bootloader bootloader_support efuse esp_app_format esp_common esp_hw_support esp_rom esp_system esptool_py freertos hal log main micro-ecc newlib partition_table riscv soc spi_flash
+-- Component paths: C:/dev/tools/expressif/esp-idf/components/bootloader C:/dev/tools/expressif/esp-idf/components/bootloader_support C:/dev/tools/expressif/esp-idf/components/efuse C:/dev/tools/expressif/esp-idf/components/esp_app_format C:/dev/tools/expressif/esp-idf/components/esp_common C:/dev/tools/expressif/esp-idf/components/esp_hw_support C:/dev/tools/expressif/esp-idf/components/esp_rom C:/dev/tools/expressif/esp-idf/components/esp_system C:/dev/tools/expressif/esp-idf/components/esptool_py C:/dev/tools/expressif/esp-idf/components/freertos C:/dev/tools/expressif/esp-idf/components/hal C:/dev/tools/expressif/esp-idf/components/log C:/dev/teslafly_vesc_express_firmware_dev/bootloader_components/main C:/dev/tools/expressif/esp-idf/components/bootloader/subproject/components/micro-ecc C:/dev/tools/expressif/esp-idf/components/newlib C:/dev/tools/expressif/esp-idf/components/partition_table C:/dev/tools/expressif/esp-idf/components/riscv C:/dev/tools/expressif/esp-idf/components/soc C:/dev/tools/expressif/esp-idf/components/spi_flash
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/dev/teslafly_vesc_express_firmware_dev/build/bootloader
+[836/1153] Performing build step for 'bootloader'
+[1/94] Generating project_elf_src_esp32c3.c
+[2/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/lldesc.c.obj
+[3/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/dedic_gpio_periph.c.obj
+[4/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/dport_access_common.c.obj
+[5/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/sdm_periph.c.obj
+[6/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/adc_periph.c.obj
+[7/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/interrupts.c.obj
+[8/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/uart_periph.c.obj
+[9/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/gdma_periph.c.obj
+[10/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/gpio_periph.c.obj
+[11/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/i2c_periph.c.obj
+[12/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/ledc_periph.c.obj
+[13/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/i2s_periph.c.obj
+[14/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/rmt_periph.c.obj
+[15/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/timer_periph.c.obj
+[16/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/spi_periph.c.obj
+[17/94] Building C object esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32c3/temperature_sensor_periph.c.obj
+[18/94] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/mmu_hal.c.obj
+[19/94] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/efuse_hal.c.obj
+[20/94] Building C object CMakeFiles/bootloader.elf.dir/project_elf_src_esp32c3.c.obj
+[21/94] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/esp32c3/efuse_hal.c.obj
+[22/94] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/cache_hal.c.obj
+[23/94] Building C object esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/esp_app_desc.c.obj
+[24/94] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/wdt_hal_iram.c.obj
+[25/94] Building C object esp-idf/hal/CMakeFiles/__idf_hal.dir/mpu_hal.c.obj
+[26/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_common.c.obj
+[27/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/flash_partitions.c.obj
+[28/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_common_loader.c.obj
+[29/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_clock_init.c.obj
+[30/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/bootloader_flash/src/bootloader_flash_config_esp32c3.c.obj
+[31/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/secure_boot.c.obj
+[32/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/flash_encrypt.c.obj
+[33/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_random.c.obj
+[34/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/bootloader_flash/src/flash_qio_mode.c.obj
+[35/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_random_esp32c3.c.obj
+[36/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_mem.c.obj
+[37/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp32c3/bootloader_soc.c.obj
+[38/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_console_loader.c.obj
+[39/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/bootloader_flash/src/bootloader_flash.c.obj
+[40/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp32c3/bootloader_esp32c3.c.obj
+[41/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_clock_loader.c.obj
+[42/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_efuse.c.obj
+[43/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp32c3/bootloader_sha.c.obj
+[44/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_console.c.obj
+[45/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_utility.c.obj
+[46/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp_image_format.c.obj
+[47/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32c3/esp_efuse_table.c.obj
+[48/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_panic.c.obj
+[49/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32c3/esp_efuse_utility.c.obj
+[50/94] Building C object esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/bootloader_init.c.obj
+[51/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/esp_efuse_api.c.obj
+[52/94] Building C object esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/esp_err.c.obj
+[53/94] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/log_noos.c.obj
+[54/94] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/log.c.obj
+[55/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/esp_efuse_fields.c.obj
+[56/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32c3/esp_efuse_fields.c.obj
+[57/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/esp_memory_utils.c.obj
+[58/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/esp32c3/esp_efuse_rtc_calib.c.obj
+[59/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/cpu.c.obj
+[60/94] Building C object esp-idf/log/CMakeFiles/__idf_log.dir/log_buffers.c.obj
+[61/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/efuse_controller/keys/with_key_purposes/esp_efuse_api_key.c.obj
+[62/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32c3/chip_info.c.obj
+[63/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32c3/rtc_clk.c.obj
+[64/94] Building C object esp-idf/efuse/CMakeFiles/__idf_efuse.dir/src/esp_efuse_utility.c.obj
+[65/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32c3/rtc_clk_init.c.obj
+[66/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32c3/rtc_init.c.obj
+[67/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32c3/rtc_time.c.obj
+[68/94] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_sys.c.obj
+[69/94] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_uart.c.obj
+[70/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32c3/rtc_pm.c.obj
+[71/94] Building C object esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32c3/rtc_sleep.c.obj
+[72/94] Building C object esp-idf/micro-ecc/CMakeFiles/__idf_micro-ecc.dir/uECC_verify_antifault.c.obj
+[73/94] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_regi2c.c.obj
+[74/94] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_spiflash.c.obj
+[75/94] Building C object esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/src/esp_err_to_name.c.obj
+[76/94] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_crc.c.obj
+[77/94] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_systimer.c.obj
+[78/94] Building C object esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/patches/esp_rom_efuse.c.obj
+[79/94] Linking C static library esp-idf\log\liblog.a
+[80/94] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/bootloader_start.c.obj
+[81/94] Linking C static library esp-idf\esp_rom\libesp_rom.a
+[82/94] Linking C static library esp-idf\esp_common\libesp_common.a
+[83/94] Linking C static library esp-idf\esp_hw_support\libesp_hw_support.a
+[84/94] Linking C static library esp-idf\esp_system\libesp_system.a
+[85/94] Linking C static library esp-idf\efuse\libefuse.a
+[86/94] Linking C static library esp-idf\bootloader_support\libbootloader_support.a
+[87/94] Linking C static library esp-idf\esp_app_format\libesp_app_format.a
+[88/94] Linking C static library esp-idf\hal\libhal.a
+[89/94] Linking C static library esp-idf\micro-ecc\libmicro-ecc.a
+[90/94] Linking C static library esp-idf\soc\libsoc.a
+[91/94] Linking C static library esp-idf\main\libmain.a
+[92/94] Linking C executable bootloader.elf
+[93/94] Generating binary image from built executable
+esptool.py v4.4
+Creating esp32c3 image...
+Merged 1 ELF section
+Successfully created esp32c3 image.
+Generated C:/dev/teslafly_vesc_express_firmware_dev/build/bootloader/bootloader.bin
+[94/94] cmd.exe /C "cd /D C:\dev\teslafly_vesc_express_firmware_dev\build\bootloader\esp-idf\esptool_py && c:\dev\tools\expressif\.espressif\python_env\idf5.0_py3.8_env\Scripts\python.exe C:/dev/tools/expressif/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/dev/teslafly_vesc_express_firmware_dev/build/bootloader/bootloader.bin"
+Bootloader binary size 0x30e0 bytes. 0x4f20 bytes (62%) free.
+[1105/1153] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/adc.c.obj
+In file included from C:/dev/teslafly_vesc_express_firmware_dev/main/adc.c:20:
+C:/dev/tools/expressif/esp-idf/components/esp_adc/deprecated/include/esp_adc_cal.h:17:2: warning: #warning "legacy adc calibration driver is deprecated, please migrate to use esp_adc/adc_cali.h and esp_adc/adc_cali_scheme.h" [-Wcpp]
+   17 | #warning "legacy adc calibration driver is deprecated, please migrate to use esp_adc/adc_cali.h and esp_adc/adc_cali_scheme.h"
+      |  ^~~~~~~
+In file included from C:/dev/teslafly_vesc_express_firmware_dev/main/adc.h:24,
+                 from C:/dev/teslafly_vesc_express_firmware_dev/main/adc.c:21:
+C:/dev/tools/expressif/esp-idf/components/driver/deprecated/driver/adc.h:19:2: warning: #warning "legacy adc driver is deprecated, please migrate to use esp_adc/adc_oneshot.h and esp_adc/adc_continuous.h for oneshot mode and continuous mode drivers respectively" [-Wcpp]
+   19 | #warning "legacy adc driver is deprecated, please migrate to use esp_adc/adc_oneshot.h and esp_adc/adc_continuous.h for oneshot mode and continuous mode drivers respectively"
+      |  ^~~~~~~
+[1108/1153] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+In file included from C:/dev/teslafly_vesc_express_firmware_dev/main/adc.h:24,
+                 from C:/dev/teslafly_vesc_express_firmware_dev/main/main.c:33:
+C:/dev/tools/expressif/esp-idf/components/driver/deprecated/driver/adc.h:19:2: warning: #warning "legacy adc driver is deprecated, please migrate to use esp_adc/adc_oneshot.h and esp_adc/adc_continuous.h for oneshot mode and continuous mode drivers respectively" [-Wcpp]
+   19 | #warning "legacy adc driver is deprecated, please migrate to use esp_adc/adc_oneshot.h and esp_adc/adc_continuous.h for oneshot mode and continuous mode drivers respectively"
+      |  ^~~~~~~
+[1152/1153] Generating binary image from built executable
+esptool.py v4.4
+Creating esp32c3 image...
+Merged 2 ELF sections
+Successfully created esp32c3 image.
+Generated C:/dev/teslafly_vesc_express_firmware_dev/build/teslafly_vesc_express_firmware_dev.bin
+[1153/1153] cmd.exe /C "cd /D C:\dev\teslafly_vesc_express_firmware_dev\build\esp-idf\esptool_py && c:\dev\tools\expressif\.espressi...ev/build/partition_table/partition-table.bin C:/dev/teslafly_vesc_express_firmware_dev/build/teslafly_vesc_express_firmware_dev.bin"
+teslafly_vesc_express_firmware_dev.bin binary size 0x153900 bytes. Smallest app partition is 0x177000 bytes. 0x23700 bytes (9%) free.

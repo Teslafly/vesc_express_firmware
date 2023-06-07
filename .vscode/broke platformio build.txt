@@ -1,0 +1,31 @@
+broke platformio
+
+Checking esp32-c3-trampa-express > cppcheck (platform: espressif32@^6.0.0; board: esp32-c3-devkitm-1; framework: espidf)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Error: Processing esp32-c3-trampa-express (platform: espressif32@^6.0.0; board: esp32-c3-devkitm-1; framework: espidf)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-c3-devkitm-1.html
+PLATFORM: Espressif 32 (6.0.0) > Espressif ESP32-C3-DevKitM-1
+HARDWARE: ESP32C3 160MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-builtin, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-espidf @ 3.50000.0 (5.0.0) 
+ - tool-cmake @ 3.16.4 
+ - tool-esptoolpy @ 1.40400.0 (4.4.0) 
+ - tool-idf @ 1.0.1 
+ - tool-mconf @ 1.4060000.20190628 (406.0.0) 
+ - tool-ninja @ 1.9.0 
+ - toolchain-esp32ulp @ 1.23500.220830 (2.35.0) 
+ - toolchain-riscv32-esp @ 11.2.0+2022r1
+WARNING: Ignoring invalid distribution -latformio (c:\users\marshall\.platformio\penv\lib\site-packages)
+Reading CMake configuration...
+-- Configuring incomplete, errors occurred!
+
+CMake Error at C:/Users/Marshall/.platformio/packages/framework-espidf/tools/cmake/targets.cmake:19 (message):
+  IDF_TARGET in CMake cache does not match IDF_TARGET environment variable.
+  To change the target, clear the build directory and sdkconfig file, and
+  build the project again
+Call Stack (most recent call first):
+  C:/Users/Marshall/.platformio/packages/framework-espidf/tools/cmake/project.cmake:7 (__target_init)
+  CMakeLists.txt:7 (include)
